@@ -914,14 +914,14 @@ module axi_riscv_amos #(
      * ALU
      */
 
-    assign op_a           = r_data_q & strb_ext;
-    assign op_b           = w_data_q & strb_ext;
-    assign bid_endian     = (atop_q[3] == axi_pkg::ATOP_BIG_END);
+    assign big_endian     = (atop_q[3] == axi_pkg::ATOP_BIG_END);
+    assign op_a           = big_endian ? {<<8{r_data_q & strb_ext}} : (r_data_q & strb_ext);
+    assign op_b           = big_endian ? {<<8{w_data_q & strb_ext}} : (w_data_q & strb_ext);
     // TODO check if it's correct for 32bit operations
-    assign sign_a         = big endian ? op_a[RISCV_WORD_WIDTH-1] : |(op_a & ~(strb_ext >> 1));
-    assign sign_b         = big endian ? op_b[RISCV_WORD_WIDTH-1] : |(op_b & ~(strb_ext >> 1));
+    assign sign_a         = big_endian ? op_a[RISCV_WORD_WIDTH-1] : |(op_a & ~(strb_ext >> 1));
+    assign sign_b         = big_endian ? op_b[RISCV_WORD_WIDTH-1] : |(op_b & ~(strb_ext >> 1));
     // TODO check that big_endian flag is valid until alu_result_ext is read (atop_q shouldn't change)
-    assign alu_result_ext = big endian ? {<<8{res}} : res;
+    assign alu_result_ext = big_endian ? {<<8{res}} : res;
 
     generate
         if (AXI_ALU_RATIO == 1 && RISCV_WORD_WIDTH == 32) begin
